@@ -279,6 +279,8 @@ Releases track the published ClawHub versions.
 
 | Version | ClawHub |
 | --- | --- |
+| 1.0.4 | [adversarial-review-pipeline v1.0.4](https://clawhub.ai/djc00p/skills/adversarial-review-pipeline) — adds the `BROKEN` verdict; titles match the slug |
+| 1.0.3 | [adversarial-review-pipeline v1.0.3](https://clawhub.ai/djc00p/skills/adversarial-review-pipeline) |
 | 1.0.1 | [adversarial-review-pipeline v1.0.1](https://clawhub.ai/djc00p/skills/adversarial-review-pipeline) |
 
 ---
