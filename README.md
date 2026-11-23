@@ -163,9 +163,11 @@ differ only in how much more work happens before that report arrives.
 
 **`BROKEN` is a loop, `REJECT` is a stop.** A branch that comes back `BROKEN`
 is normal pipeline traffic - the Fixer addresses it and the branch re-enters
-at the Breaker. The loop iterates without asking permission; the decision
-never happens without one. Only `REJECT` interrupts the person running the
-pipeline.
+at the Breaker. Those fix-and-recheck rounds happen on their own so the
+person reading the final report is looking at the best version of the change
+rather than the first draft of it. The shipping decision stays with the
+human; the pipeline does not make it. Only `REJECT` interrupts the person
+running the pipeline.
 
 Role contract, prompts, and verdict format: `references/three-agent-pipeline.md`
 

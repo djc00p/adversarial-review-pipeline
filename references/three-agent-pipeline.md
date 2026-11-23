@@ -147,8 +147,11 @@ doing the work the human would otherwise have to request.
 **REJECT is the stop signal.** It means the change will not be accepted as
 written, for the reasons the Reviewer gave. Escalate that one.
 
-The loop iterates without asking permission; the decision never happens
-without one.
+Every verdict ends at the same place: a report a human reads. The internal
+fix-and-recheck rounds happen first, on their own, so the person reading the
+report is looking at the best version of the change rather than the first
+draft of it. The shipping decision is theirs alone, and the pipeline does not
+make it.
 
 ### The verdict is not the decision
 
