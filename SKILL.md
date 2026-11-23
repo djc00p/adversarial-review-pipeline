@@ -55,6 +55,15 @@ grep -rn "<changed_function_or_constant>" --include="*.<ext>" .
 unreviewed caller is the most common place a "complete" change breaks
 something.
 
+Also list what the change makes wrong in the docs:
+
+```bash
+grep -rn "<the thing you changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
+```
+
+**A doc you cannot check is a doc you have not reviewed.** Stale docs make the
+wrong thing look right to the next person.
+
 ### 2. Read the change adversarially
 
 Read the diff once as if you were trying to break it. For each hunk, ask:
@@ -71,6 +80,7 @@ Read the diff once as if you were trying to break it. For each hunk, ask:
 | What is logged, returned, or rendered? | Sensitive data leaking to logs or UI |
 | Is this the smallest thing that does the job? | Scope creep, speculative generality |
 | Is there already a helper for this? | Reinvention, two implementations drifting |
+| Does any doc still describe the old behavior? | Stale setup, interface, or workflow instructions |
 
 Then run the tests. A failing test is the highest-value finding available to
 you, and it is also the cheapest to verify.
@@ -189,6 +199,20 @@ the requirement, the Breaker sees only the artifact, and the Reviewer sees
 both. The role contract, the three prompts, and the verdict format are in
 `references/three-agent-pipeline.md`.
 
+**The docs are part of the change.** The Writer updates the project docs the
+change makes wrong - README.md, AGENTS.md, docs/*, .agents/*, the rulebook
+tracker, module lists, architecture notes - whenever the change affects public
+interfaces, workflows, or project state. The Breaker checks that they were.
+Both sides use the same grep:
+
+```bash
+grep -rn "<the thing that changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
+```
+
+Every hit that still describes the **old** behavior is a finding. A doc
+describing behavior the change did **not** touch is not a finding - the point
+is accuracy, not coverage.
+
 ## Tier 3 — Five-agent pipeline (Writer → Breaker → Fixer → Spec Writer → Live Tester)
 
 The three-agent pipeline plus a fix loop and browser verification - which is
@@ -202,7 +226,14 @@ Use it for user-facing features with forms, redirects, auth flows, or
 multi-step wizards. The Breaker and the Fixer are deliberately separate
 agents: a model in adversarial mode is good at finding problems and bad at
 writing fixes, and an agent that both finds and fixes will rationalize its
-own findings. The role definitions, the Fixer prompt, and the ordering rules
+own findings.
+
+**The PR opens only after the docs match the change.** Before creating the PR,
+run the same grep. If any hit still describes the old behavior, the docs are
+missing - route back to the Fixer to update them, or update them in the main
+session if the fix is small and obvious enough that spawning a Fixer would
+cost more. Either way the PR does not open until the stale hits are gone.
+Do not open a PR with a known-stale doc and note it for later. The role definitions, the Fixer prompt, and the ordering rules
 are in `references/five-agent-pipeline.md`.
 
 ## The YAGNI & DRY review
@@ -277,6 +308,8 @@ Do not restate the review checklist or narrate the agents.
 - [ ] A verdict was given: ACCEPT, ACCEPT WITH FIXES, BROKEN, or REJECT.
 - [ ] A `BROKEN` verdict went back through the Breaker and Reviewer rather
       than being escalated or abandoned.
+- [ ] The project docs were updated to match the change - no doc still
+      describes the old behavior.
 
 ## Related
 

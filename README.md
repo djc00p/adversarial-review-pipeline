@@ -66,6 +66,14 @@ grep -rn "<changed_function_or_constant>" --include="*.<ext>" .
 
 > **A file you cannot list the callers of is a file you have not reviewed.** An unreviewed caller is the most common place a "complete" change breaks something.
 
+Also list what the change makes wrong in the docs:
+
+```bash
+grep -rn "<the thing you changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
+```
+
+> **A doc you cannot check is a doc you have not reviewed.** Stale docs make the wrong thing look right to the next person.
+
 ### 2. Read the change adversarially
 
 | Question | What it catches |
@@ -80,6 +88,7 @@ grep -rn "<changed_function_or_constant>" --include="*.<ext>" .
 | What is logged, returned, or rendered? | Sensitive data leaking to logs or UI |
 | Is this the smallest thing that does the job? | Scope creep, speculative generality |
 | Is there already a helper for this? | Reinvention, two implementations drifting |
+| Does any doc still describe the old behavior? | Stale setup, interface, or workflow instructions |
 
 Then run the tests. A failing test is the highest-value finding available, and it is also the cheapest to verify.
 
@@ -147,6 +156,35 @@ Writer  ->  Breaker  ->  Reviewer  ->  Human
 Each role sees a different slice, and that is the point: the Writer sees only the requirement, the Breaker sees only the artifact, the Reviewer sees both.
 
 > **Why the Breaker must not see the Writer's reasoning:** a reviewer that sees the rationale tends to agree with it. Isolation is the mechanism, not a formality.
+
+### The docs are part of the change
+
+**The Writer owns the project docs the change makes wrong, and the Breaker
+checks them.** A branch that changes how the project works and leaves the docs
+describing the old behavior is an incomplete branch - and it is the kind of
+incompleteness that survives review, because a reader of the diff sees code,
+not the doc that contradicts it.
+
+Update these whenever the change affects public interfaces, workflows, or
+project state:
+
+- `README.md`
+- `AGENTS.md`
+- `docs/*`
+- `.agents/*`
+- the rulebook tracker
+- module lists
+- architecture notes
+
+The check is the same on both sides:
+
+```bash
+grep -rn "<the thing that changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
+```
+
+Every hit that still describes the **old** behavior is a finding. A doc
+describing behavior the change did **not** touch is not a finding - the point
+is accuracy, not coverage.
 
 ### The verdict decides the next step
 
@@ -222,6 +260,7 @@ Full lens and the money/state checklist: `references/review-checklists.md`
 | Fixing the spec instead of the code | When the spec was written to match the implementation |
 | Reviewing only the happy path | Defects live in the empty state, boundary, retry, and unauthorized caller |
 | Omitting `Scope & Skipped` | A narrow review then reads as a broad one |
+| Shipping code with stale docs | The next person reads the wrong thing and trusts it |
 | Running the multi-agent pipeline on a trivial change | Coordination cost exceeds the value |
 
 ---
