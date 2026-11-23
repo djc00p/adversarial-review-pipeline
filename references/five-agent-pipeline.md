@@ -61,8 +61,16 @@ end with a `## Scope & Skipped` section.
 
 ### The Fixer prompt
 
+The Fixer runs on two verdicts, and the verdict decides what happens next.
+
+- `ACCEPT WITH FIXES` - apply the fixes the Reviewer listed.
+- `BROKEN` - apply everything needed to address the Breaker's findings and
+  the Reviewer's rationale. **The branch then goes back through the Breaker
+  and the Reviewer.** That is the normal path for a `BROKEN` verdict, not an
+  escalation.
+
 ```text
-Apply fixes from the findings at <path>/breaker-<slug>.md.
+Apply the required fixes from the findings at <path>/breaker-<slug>.md.
 
 - Fix all block-merge and high findings
 - Fix medium findings when it is safe to do so
@@ -76,9 +84,34 @@ Apply fixes from the findings at <path>/breaker-<slug>.md.
 - For UNNECESSARY INDIRECTION findings: remove the dependency or wrapper
 
 Run the tests after each fix group. Do not commit until they pass.
+Do not push. Do not merge.
 
 Output: write a summary to <path>/fixer-<slug>.md
 ```
+
+If a fix breaks a previously-passing test, the Fixer reconciles it - not the
+Breaker.
+
+### Opening the PR
+
+**A PR is opened only after the review comes back `ACCEPT`** (or
+`ACCEPT WITH FIXES` with every fix applied and the tests green). Never open a
+PR for unfinished work.
+
+A PR is a claim that the work is complete. A branch carrying unresolved
+Breaker findings, unapplied Fixer work, or a `BROKEN` verdict does not support
+that claim, and a PR opened on it produces CI results for code that is about
+to change, review comments attached to a diff that no longer exists, and no
+way to tell which version was approved.
+
+Use the project's own PR template if it has one. Fill out every section
+before opening it.
+
+**Only the agent that owns the final push opens the PR.** In this tier that is
+the Live Tester - it is last, and the PR head is the version that was driven
+in a real browser. If the Fixer's work breaks a previously-passing test, the
+Live Tester has to go back and confirm the fix, so the PR opens against a
+verified head.
 
 ### Ordering
 

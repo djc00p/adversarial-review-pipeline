@@ -1,8 +1,8 @@
-# 🛡️ Adversarial Code Review
+# 🛡️ Adversarial Review Pipeline
 
 [![ClawHub Skill](https://img.shields.io/badge/ClawHub-Skill-blue)](https://clawhub.ai/djc00p/skills/adversarial-review-pipeline) [![Agent Skill](https://img.shields.io/badge/Agent-Skill-blue)](#) [![Language Agnostic](https://img.shields.io/badge/Core-Language_Agnostic-4285F4.svg)](#) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Adversarial Code Review** reviews a change the way someone who wants it to fail would. The goal is not to confirm the work is good — it is to find what is wrong with it *before* it ships.
+**Adversarial review** reads a change the way someone who wants it to fail would. The goal is not to confirm the work is good — it is to find what is wrong with it *before* it ships.
 
 A review that asks *"is this good?"* produces reassurance. A review that asks *"what would break this?"* produces findings. The entire difference is in the framing of the request.
 
@@ -119,8 +119,13 @@ Then run the tests. A failing test is the highest-value finding available, and i
 
 ## Verdict
 
-ACCEPT / ACCEPT WITH FIXES / REJECT
+ACCEPT / ACCEPT WITH FIXES / BROKEN / REJECT
 ```
+
+`ACCEPT` ships it. `ACCEPT WITH FIXES` applies the listed fixes then ships.
+`BROKEN` means it needs more work - a Fixer applies the fixes and the branch
+goes back through the Breaker and Reviewer. `REJECT` means it will not be
+accepted as written; stop and escalate.
 
 ### `## Scope & Skipped` is required
 
@@ -139,6 +144,20 @@ Each role sees a different slice, and that is the point: the Writer sees only th
 
 > **Why the Breaker must not see the Writer's reasoning:** a reviewer that sees the rationale tends to agree with it. Isolation is the mechanism, not a formality.
 
+### The verdict decides the next step
+
+| Verdict | What happens next | Escalates to a human? |
+|---|---|---|
+| `ACCEPT` | ship it | no |
+| `ACCEPT WITH FIXES` | apply the listed fixes, then ship | no |
+| `BROKEN` | a Fixer applies all the fixes, then the branch goes back through the Breaker and Reviewer | **no** |
+| `REJECT` | stop | **yes** |
+
+**`BROKEN` is a loop, `REJECT` is a stop.** A branch that comes back `BROKEN`
+is normal pipeline traffic - the Fixer addresses it and the branch re-enters
+at the Breaker. Only `REJECT`, and external blockers like a merge conflict or
+a CI failure on the final head, interrupt the person running the pipeline.
+
 Role contract, prompts, and verdict format: `references/three-agent-pipeline.md`
 
 ---
@@ -152,6 +171,8 @@ Writer -> Breaker -> Fixer -> Spec Writer -> Live Tester
 The three-agent pipeline plus a fix loop and browser verification — which is what catches the class of bug that unit tests structurally cannot.
 
 > **Why the Breaker and the Fixer are separate agents:** a model in adversarial mode is good at finding problems and bad at writing fixes. An agent that both finds and fixes will rationalize its own findings.
+
+**Open the PR only after `ACCEPT`.** A PR is a claim the work is complete. A branch carrying unresolved Breaker findings, unapplied Fixer work, or a `BROKEN` verdict does not support that claim - and CI would run against code that is about to change.
 
 Role definitions, the Fixer prompt, and the ordering rules: `references/five-agent-pipeline.md`
 
@@ -185,6 +206,8 @@ Full lens and the money/state checklist: `references/review-checklists.md`
 | Trusting a completion message over the artifact | The write may have silently failed |
 | Spawning agents in parallel | The roles are a dependency chain |
 | Letting the same agent find and fix | It will rationalize its own findings |
+| Treating `BROKEN` as a stop | `BROKEN` is a loop back through the Breaker, not an escalation |
+| Opening a PR before `ACCEPT` | CI runs against a diff that is about to change |
 | Fixing the spec instead of the code | When the spec was written to match the implementation |
 | Reviewing only the happy path | Defects live in the empty state, boundary, retry, and unauthorized caller |
 | Omitting `Scope & Skipped` | A narrow review then reads as a broad one |

@@ -107,10 +107,43 @@ Review the change at <path-to-diff-or-branch> and the findings at
 - Check every finding against the code before accepting it. A finding that
   does not hold up should be dropped, with the reason.
 
-Produce a final verdict: ACCEPT / ACCEPT WITH FIXES / REJECT.
+Produce a final verdict: ACCEPT / ACCEPT WITH FIXES / BROKEN / REJECT.
+
+  - ACCEPT: ready to ship
+  - ACCEPT WITH FIXES: apply the listed fixes, then ready to ship
+  - BROKEN: needs more work. A Fixer applies the fixes and the branch goes
+    back through the Breaker and Reviewer
+  - REJECT: we will not accept this change for the stated reasons. Stop and
+    escalate to a human
+
+Do NOT merge the branch. Your output is a verdict document only.
 
 Output: write the verdict to <path>/review-<slug>.md
 ```
+
+### BROKEN is a loop, REJECT is a stop
+
+These two verdicts do very different things, and conflating them is how a
+pipeline stalls.
+
+| Verdict | What happens next | Escalates to a human? |
+|---|---|---|
+| `ACCEPT` | ship it | no |
+| `ACCEPT WITH FIXES` | apply the listed fixes, then ship | no |
+| `BROKEN` | a Fixer applies all the fixes, then the branch goes back through the Breaker and Reviewer | **no** |
+| `REJECT` | stop | **yes** |
+
+**BROKEN means "this needs more work," not "this is finished and wrong."** A
+branch that comes back `BROKEN` is normal pipeline traffic: the Fixer
+addresses the findings and the branch re-enters the loop at the Breaker. The
+person running the pipeline is not interrupted for it.
+
+**REJECT is the stop signal.** It means the change will not be accepted as
+written, for the reasons the Reviewer gave. Escalate that one.
+
+Only external blockers also pause the pipeline for a human: a requested
+change from a human reviewer, a merge conflict, or a CI failure on the final
+head that is not the pipeline's own doing.
 
 ### The verdict is not the decision
 
@@ -120,6 +153,9 @@ The Reviewer produces a recommendation. A human decides. Report back with:
 - **What the Breaker found** - count by severity
 - **What the Reviewer recommends** - the verdict and any unresolved concerns
 - **Your confidence** - and anything you could not verify
+
+Keep the report to what changes what the reader does. Do not narrate the
+agents or the steps.
 
 ### Cost, and when it is not worth it
 

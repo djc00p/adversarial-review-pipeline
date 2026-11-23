@@ -4,7 +4,7 @@ description: "Adversarially review a code change before it ships - a single-agen
 metadata: {"clawdbot":{"emoji":"🛡️","requires":{"bins":[]},"os":["linux","darwin","win32"],"version":"1.0.1"}}
 ---
 
-# Adversarial Code Review
+# Adversarial Review Pipeline
 
 Review a change the way someone who wants it to fail would. The goal is not to
 confirm the work is good - it is to find what is wrong with it before it ships.
@@ -117,8 +117,13 @@ The report is the deliverable. Put it in a file:
 
 ## Verdict
 
-ACCEPT / ACCEPT WITH FIXES / REJECT
+ACCEPT / ACCEPT WITH FIXES / BROKEN / REJECT
 ```
+
+`ACCEPT` ships it. `ACCEPT WITH FIXES` applies the listed fixes then ships.
+`BROKEN` means it needs more work - a Fixer applies the fixes and the branch
+goes back through the Breaker and Reviewer. `REJECT` means it will not be
+accepted as written; stop and escalate.
 
 ### 5. The Scope & Skipped section is required
 
@@ -265,7 +270,9 @@ Do not restate the review checklist or narrate the agents.
       the real request shape.
 - [ ] Money/state checks were run if the change touches money, state, or
       webhooks.
-- [ ] A verdict was given: ACCEPT, ACCEPT WITH FIXES, or REJECT.
+- [ ] A verdict was given: ACCEPT, ACCEPT WITH FIXES, BROKEN, or REJECT.
+- [ ] A `BROKEN` verdict went back through the Breaker and Reviewer rather
+      than being escalated or abandoned.
 
 ## Related
 
