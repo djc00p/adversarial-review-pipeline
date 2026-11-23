@@ -113,6 +113,10 @@ in a real browser. If the Fixer's work breaks a previously-passing test, the
 Live Tester has to go back and confirm the fix, so the PR opens against a
 verified head.
 
+Opening the PR is not the decision to ship. The PR waits for a human to
+review and merge it; opening it only makes the reviewed work visible for
+that review.
+
 ### Ordering
 
 Run the roles **sequentially**. Do not spawn the next role until the previous

@@ -126,24 +126,29 @@ Output: write the verdict to <path>/review-<slug>.md
 These two verdicts do very different things, and conflating them is how a
 pipeline stalls.
 
-| Verdict | What happens next | Escalates to a human? |
+| Verdict | What happens next | Interrupts the pipeline? |
 |---|---|---|
-| `ACCEPT` | ship it | no |
-| `ACCEPT WITH FIXES` | apply the listed fixes, then ship | no |
-| `BROKEN` | a Fixer applies all the fixes, then the branch goes back through the Breaker and Reviewer | **no** |
-| `REJECT` | stop | **yes** |
+| `ACCEPT` | the review is done and the report is ready for the human decision | no |
+| `ACCEPT WITH FIXES` | apply the listed fixes, then the report is ready for the human decision | no |
+| `BROKEN` | a Fixer applies all the fixes, then the branch goes back through the Breaker and Reviewer | no |
+| `REJECT` | stop and report why | **yes** |
+
+**No verdict ships anything on its own.** Every one of them ends in a report
+that a human reads and acts on - the Reviewer recommends, a human decides.
+The difference between the verdicts is only *how much more work happens
+before* that report reaches the human.
 
 **BROKEN means "this needs more work," not "this is finished and wrong."** A
 branch that comes back `BROKEN` is normal pipeline traffic: the Fixer
 addresses the findings and the branch re-enters the loop at the Breaker. The
-person running the pipeline is not interrupted for it.
+person running the pipeline is not interrupted for it, because the loop is
+doing the work the human would otherwise have to request.
 
 **REJECT is the stop signal.** It means the change will not be accepted as
 written, for the reasons the Reviewer gave. Escalate that one.
 
-Only external blockers also pause the pipeline for a human: a requested
-change from a human reviewer, a merge conflict, or a CI failure on the final
-head that is not the pipeline's own doing.
+The loop iterates without asking permission; the decision never happens
+without one.
 
 ### The verdict is not the decision
 

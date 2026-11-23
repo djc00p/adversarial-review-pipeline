@@ -122,10 +122,14 @@ Then run the tests. A failing test is the highest-value finding available, and i
 ACCEPT / ACCEPT WITH FIXES / BROKEN / REJECT
 ```
 
-`ACCEPT` ships it. `ACCEPT WITH FIXES` applies the listed fixes then ships.
-`BROKEN` means it needs more work - a Fixer applies the fixes and the branch
-goes back through the Breaker and Reviewer. `REJECT` means it will not be
-accepted as written; stop and escalate.
+`ACCEPT` means the review is done and the report is ready for the human
+decision. `ACCEPT WITH FIXES` applies the listed fixes and then the report is
+ready for that decision. `BROKEN` means it needs more work - a Fixer applies
+the fixes and the branch goes back through the Breaker and Reviewer. `REJECT`
+means it will not be accepted as written; stop and escalate.
+
+No verdict ships anything on its own. Every one ends in a report a human reads
+and acts on.
 
 ### `## Scope & Skipped` is required
 
@@ -146,17 +150,22 @@ Each role sees a different slice, and that is the point: the Writer sees only th
 
 ### The verdict decides the next step
 
-| Verdict | What happens next | Escalates to a human? |
+| Verdict | What happens next | Interrupts the pipeline? |
 |---|---|---|
-| `ACCEPT` | ship it | no |
-| `ACCEPT WITH FIXES` | apply the listed fixes, then ship | no |
-| `BROKEN` | a Fixer applies all the fixes, then the branch goes back through the Breaker and Reviewer | **no** |
-| `REJECT` | stop | **yes** |
+| `ACCEPT` | the review is done and the report is ready for the human decision | no |
+| `ACCEPT WITH FIXES` | apply the listed fixes, then the report is ready for the human decision | no |
+| `BROKEN` | a Fixer applies all the fixes, then the branch goes back through the Breaker and Reviewer | no |
+| `REJECT` | stop and report why | **yes** |
+
+**No verdict ships anything on its own.** Every one ends in a report a human
+reads and acts on - the Reviewer recommends, a human decides. The verdicts
+differ only in how much more work happens before that report arrives.
 
 **`BROKEN` is a loop, `REJECT` is a stop.** A branch that comes back `BROKEN`
 is normal pipeline traffic - the Fixer addresses it and the branch re-enters
-at the Breaker. Only `REJECT`, and external blockers like a merge conflict or
-a CI failure on the final head, interrupt the person running the pipeline.
+at the Breaker. The loop iterates without asking permission; the decision
+never happens without one. Only `REJECT` interrupts the person running the
+pipeline.
 
 Role contract, prompts, and verdict format: `references/three-agent-pipeline.md`
 
@@ -172,7 +181,7 @@ The three-agent pipeline plus a fix loop and browser verification — which is w
 
 > **Why the Breaker and the Fixer are separate agents:** a model in adversarial mode is good at finding problems and bad at writing fixes. An agent that both finds and fixes will rationalize its own findings.
 
-**Open the PR only after `ACCEPT`.** A PR is a claim the work is complete. A branch carrying unresolved Breaker findings, unapplied Fixer work, or a `BROKEN` verdict does not support that claim - and CI would run against code that is about to change.
+**Open the PR only after `ACCEPT`.** A PR is a claim the work is complete. A branch carrying unresolved Breaker findings, unapplied Fixer work, or a `BROKEN` verdict does not support that claim - and CI would run against code that is about to change. Opening the PR is not the decision to ship; it makes the reviewed work visible for a human to review and merge.
 
 Role definitions, the Fixer prompt, and the ordering rules: `references/five-agent-pipeline.md`
 

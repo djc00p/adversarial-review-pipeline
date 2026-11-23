@@ -120,10 +120,14 @@ The report is the deliverable. Put it in a file:
 ACCEPT / ACCEPT WITH FIXES / BROKEN / REJECT
 ```
 
-`ACCEPT` ships it. `ACCEPT WITH FIXES` applies the listed fixes then ships.
-`BROKEN` means it needs more work - a Fixer applies the fixes and the branch
-goes back through the Breaker and Reviewer. `REJECT` means it will not be
-accepted as written; stop and escalate.
+`ACCEPT` means the review is done and the report is ready for the human
+decision. `ACCEPT WITH FIXES` applies the listed fixes and then the report is
+ready for that decision. `BROKEN` means it needs more work - a Fixer applies
+the fixes and the branch goes back through the Breaker and Reviewer. `REJECT`
+means it will not be accepted as written; stop and escalate.
+
+No verdict ships anything on its own. Every one ends in a report a human reads
+and acts on.
 
 ### 5. The Scope & Skipped section is required
 
@@ -155,8 +159,8 @@ the reader where to look next.
 **The file on disk is the deliverable. The completion message is a pointer.**
 
 An agent can report completion, summarize its findings confidently, and still
-have written nothing. This happens with subagents especially, but it is not
-limited to them.
+have written nothing. This happens most often with subagents, and it can
+happen with the agent you are talking to directly.
 
 ```bash
 ls -la review-<slug>.md    # confirm it exists and is non-trivial
