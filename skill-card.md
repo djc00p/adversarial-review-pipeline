@@ -1,6 +1,6 @@
 ## Description:
 
-Adversarial review pipeline for any language or framework. Review a change the way someone who wants it to fail would, finding what is wrong with it before it ships.
+Adversarial code review for any language or framework. Review a change the way someone who wants it to fail would, finding what is wrong with it before it ships.
 
 Three tiers. Tier 1 is a single-agent severity-graded review that works anywhere with no dependencies. Tier 2 adds a three-agent Writer / Breaker / Reviewer pipeline. Tier 3 adds a five-agent pipeline with a fix loop, system-spec writing, and browser verification.
 

@@ -4,7 +4,7 @@ description: "Adversarially review a code change before it ships - a single-agen
 metadata: {"clawdbot":{"emoji":"🛡️","requires":{"bins":[]},"os":["linux","darwin","win32"],"version":"1.0.1"}}
 ---
 
-# Adversarial Review Pipeline
+# Adversarial Code Review
 
 Review a change the way someone who wants it to fail would. The goal is not to
 confirm the work is good - it is to find what is wrong with it before it ships.
@@ -55,15 +55,6 @@ grep -rn "<changed_function_or_constant>" --include="*.<ext>" .
 unreviewed caller is the most common place a "complete" change breaks
 something.
 
-Also list what the change makes wrong in the docs:
-
-```bash
-grep -rn "<the thing you changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
-```
-
-**A doc you cannot check is a doc you have not reviewed.** Stale docs make the
-wrong thing look right to the next person.
-
 ### 2. Read the change adversarially
 
 Read the diff once as if you were trying to break it. For each hunk, ask:
@@ -80,7 +71,6 @@ Read the diff once as if you were trying to break it. For each hunk, ask:
 | What is logged, returned, or rendered? | Sensitive data leaking to logs or UI |
 | Is this the smallest thing that does the job? | Scope creep, speculative generality |
 | Is there already a helper for this? | Reinvention, two implementations drifting |
-| Does any doc still describe the old behavior? | Stale setup, interface, or workflow instructions |
 
 Then run the tests. A failing test is the highest-value finding available to
 you, and it is also the cheapest to verify.
@@ -127,17 +117,8 @@ The report is the deliverable. Put it in a file:
 
 ## Verdict
 
-ACCEPT / ACCEPT WITH FIXES / BROKEN / REJECT
+ACCEPT / ACCEPT WITH FIXES / REJECT
 ```
-
-`ACCEPT` means the review is done and the report is ready for the human
-decision. `ACCEPT WITH FIXES` applies the listed fixes and then the report is
-ready for that decision. `BROKEN` means it needs more work - a Fixer applies
-the fixes and the branch goes back through the Breaker and Reviewer. `REJECT`
-means it will not be accepted as written; stop and escalate.
-
-No verdict ships anything on its own. Every one ends in a report a human reads
-and acts on.
 
 ### 5. The Scope & Skipped section is required
 
@@ -169,8 +150,8 @@ the reader where to look next.
 **The file on disk is the deliverable. The completion message is a pointer.**
 
 An agent can report completion, summarize its findings confidently, and still
-have written nothing. This happens most often with subagents, and it can
-happen with the agent you are talking to directly.
+have written nothing. This happens with subagents especially, but it is not
+limited to them.
 
 ```bash
 ls -la review-<slug>.md    # confirm it exists and is non-trivial
@@ -199,20 +180,6 @@ the requirement, the Breaker sees only the artifact, and the Reviewer sees
 both. The role contract, the three prompts, and the verdict format are in
 `references/three-agent-pipeline.md`.
 
-**The docs are part of the change.** The Writer updates the project docs the
-change makes wrong - README.md, AGENTS.md, docs/*, .agents/*, the rulebook
-tracker, module lists, architecture notes - whenever the change affects public
-interfaces, workflows, or project state. The Breaker checks that they were.
-Both sides use the same grep:
-
-```bash
-grep -rn "<the thing that changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
-```
-
-Every hit that still describes the **old** behavior is a finding. A doc
-describing behavior the change did **not** touch is not a finding - the point
-is accuracy, not coverage.
-
 ## Tier 3 — Five-agent pipeline (Writer → Breaker → Fixer → Spec Writer → Live Tester)
 
 The three-agent pipeline plus a fix loop and browser verification - which is
@@ -226,14 +193,7 @@ Use it for user-facing features with forms, redirects, auth flows, or
 multi-step wizards. The Breaker and the Fixer are deliberately separate
 agents: a model in adversarial mode is good at finding problems and bad at
 writing fixes, and an agent that both finds and fixes will rationalize its
-own findings.
-
-**The PR opens only after the docs match the change.** Before creating the PR,
-run the same grep. If any hit still describes the old behavior, the docs are
-missing - route back to the Fixer to update them, or update them in the main
-session if the fix is small and obvious enough that spawning a Fixer would
-cost more. Either way the PR does not open until the stale hits are gone.
-Do not open a PR with a known-stale doc and note it for later. The role definitions, the Fixer prompt, and the ordering rules
+own findings. The role definitions, the Fixer prompt, and the ordering rules
 are in `references/five-agent-pipeline.md`.
 
 ## The YAGNI & DRY review
@@ -305,11 +265,7 @@ Do not restate the review checklist or narrate the agents.
       the real request shape.
 - [ ] Money/state checks were run if the change touches money, state, or
       webhooks.
-- [ ] A verdict was given: ACCEPT, ACCEPT WITH FIXES, BROKEN, or REJECT.
-- [ ] A `BROKEN` verdict went back through the Breaker and Reviewer rather
-      than being escalated or abandoned.
-- [ ] The project docs were updated to match the change - no doc still
-      describes the old behavior.
+- [ ] A verdict was given: ACCEPT, ACCEPT WITH FIXES, or REJECT.
 
 ## Related
 

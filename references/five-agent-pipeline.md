@@ -51,11 +51,6 @@ problems.
   already has one - name the existing one to use
 - UNNECESSARY INDIRECTION: flag a dependency, wrapper, or conversion layer
   replaceable by the standard library or a few lines
-- DOCS: check that the project docs were updated to match the change -
-  README.md, AGENTS.md, docs/*, .agents/*, the rulebook tracker, module lists,
-  architecture notes. Grep for what changed and flag any doc that still
-  describes the old behavior. A doc describing behavior the change did not
-  touch is not a finding.
 
 Do NOT suggest fixes. Just report what's broken.
 
@@ -66,16 +61,8 @@ end with a `## Scope & Skipped` section.
 
 ### The Fixer prompt
 
-The Fixer runs on two verdicts, and the verdict decides what happens next.
-
-- `ACCEPT WITH FIXES` - apply the fixes the Reviewer listed.
-- `BROKEN` - apply everything needed to address the Breaker's findings and
-  the Reviewer's rationale. **The branch then goes back through the Breaker
-  and the Reviewer.** That is the normal path for a `BROKEN` verdict, not an
-  escalation.
-
 ```text
-Apply the required fixes from the findings at <path>/breaker-<slug>.md.
+Apply fixes from the findings at <path>/breaker-<slug>.md.
 
 - Fix all block-merge and high findings
 - Fix medium findings when it is safe to do so
@@ -87,64 +74,11 @@ Apply the required fixes from the findings at <path>/breaker-<slug>.md.
 - For REINVENTION findings: delete the new implementation and use the
   existing one named in the finding
 - For UNNECESSARY INDIRECTION findings: remove the dependency or wrapper
-- For DOCS findings: update the project docs the change made wrong -
-  README.md, AGENTS.md, docs/*, .agents/*, the rulebook tracker, module
-  lists, architecture notes. The same grep that found the stale doc confirms
-  the fix.
 
 Run the tests after each fix group. Do not commit until they pass.
-Do not push. Do not merge.
 
 Output: write a summary to <path>/fixer-<slug>.md
 ```
-
-If a fix breaks a previously-passing test, the Fixer reconciles it - not the
-Breaker.
-
-### Opening the PR
-
-**A PR is opened only after the review comes back `ACCEPT`** (or
-`ACCEPT WITH FIXES` with every fix applied and the tests green). Never open a
-PR for unfinished work.
-
-A PR is a claim that the work is complete. A branch carrying unresolved
-Breaker findings, unapplied Fixer work, or a `BROKEN` verdict does not support
-that claim, and a PR opened on it produces CI results for code that is about
-to change, review comments attached to a diff that no longer exists, and no
-way to tell which version was approved.
-
-Use the project's own PR template if it has one. Fill out every section
-before opening it.
-
-**Verify the docs before creating the PR.** A PR that ships code whose docs
-still describe the old behavior makes the wrong thing look right to the next
-person.
-
-```bash
-grep -rn "<the thing that changed>" README.md AGENTS.md docs/ .agents/ 2>/dev/null
-```
-
-If any hit still describes the **old** behavior, the docs are missing. Two
-options, and only two:
-
-1. **Route back to the Fixer** to update the docs, then re-run the Breaker
-   check on the updated branch.
-2. **Update the docs in the main session** when the fix is small and obvious
-   enough that spawning a Fixer would cost more than doing it.
-
-Either way the PR does not open until the stale hits are gone. Do not open a
-PR with a known-stale doc and note it for later - "I'll fix the docs in a
-follow-up" is how the next person reads the wrong thing.
-
-**Only the agent that owns the final push opens the PR.** In this tier that is
-the Live Tester - it is last, and the PR head is the version that was driven
-in a real browser. If the Fixer's work breaks a previously-passing test, the
-Live Tester has to go back and confirm the fix, so the PR opens against a
-verified head.
-
-Opening the PR is not the decision to ship. The PR waits for a human to
-review and merge it; opening it only makes the reviewed work visible for
-that review.
 
 ### Ordering
 
